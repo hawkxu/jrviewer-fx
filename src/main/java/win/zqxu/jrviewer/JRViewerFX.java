@@ -313,7 +313,6 @@ public class JRViewerFX extends Control {
       SimpleGraphics2DReportConfiguration configuration = new SimpleGraphics2DReportConfiguration();
       configuration.setPageIndex(pageIndex);
       configuration.setZoomRatio(zoom);
-      configuration.setWhitePageBackground(false);
       exporter.setConfiguration(configuration);
       exporter.exportReport();
     } catch (JRException ex) {

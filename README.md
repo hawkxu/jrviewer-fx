@@ -18,7 +18,7 @@ _Please note_
      <version>latest-version</version>
    </dependency>
 ```
-  * Current latest version is 0.1.0
+  * Current latest version is 0.1.1
   
 _Please note_  
   * You need to add **jasperreports** dependency individually, this design is to avoid depends on a specific version  
@@ -72,9 +72,22 @@ The main class of **jrviewer-fx** is `win.zqxu.jrviewer.JRViewerFX`, it can be u
     After you import **jrviewer-fx** into Scene Builder, you can find _JRViewerFX_ in _Custom_ section  
     Just drag and drop the _JRViewerFX_ onto your pane
 
+# International
+
+*   Extract _/win/zqxu/jrviewer/jrviewer-fx.properties_ from _jrviewer-fx-<version>.jar_ and place it under _/win/zqxu/jrviewer_
+    in your project, then rename it to _jrviewer-fx\_\<locale\>.properties_, like _jrviewer-fx\_zh\_CN.properties_,
+    translate all **text** in it into your locale, that's it.
+
 # License
 *   **jrviewer-fx** itself licensed under [Eclipse Public License - v 1.0](http://www.eclipse.org/legal/epl-v10.html)
 *   Icons are come from [Silk Icons](http://www.famfamfam.com/lab/icons/silk/), it licensed under [Creative Commons Attribution 2.5](http://creativecommons.org/licenses/by/2.5/)
 
+# Version History
 
+* version 0.1.1:
 
+  [fix] compatible with JasperReports early version like 6.1.0 etc.
+  
+* version 0.1.0
+  
+  first version of **jrviewr-fx**
