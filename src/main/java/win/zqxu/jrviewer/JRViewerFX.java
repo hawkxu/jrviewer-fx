@@ -29,6 +29,7 @@ import javafx.print.Printer;
 import javafx.print.PrinterJob;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.image.Image;
@@ -79,6 +80,9 @@ public class JRViewerFX extends Control {
   private ObjectProperty<Printer> printer = new SimpleObjectProperty<>();
   private JasperReportsContext jasperReportsContext;
 
+  private JRViewerFXSkin jrViewerFXSkin;
+
+
   public JRViewerFX() {
     this(null, null);
   }
@@ -98,7 +102,8 @@ public class JRViewerFX extends Control {
 
   @Override
   protected Skin<?> createDefaultSkin() {
-    return new JRViewerFXSkin(this);
+    this.jrViewerFXSkin =   new JRViewerFXSkin(this);
+    return this.jrViewerFXSkin;
   }
 
   public final ObjectProperty<JasperPrint> reportProperty() {
@@ -741,4 +746,8 @@ public class JRViewerFX extends Control {
       return false;
     }
   }
+
+    public Button getEmailButton() {
+        return this.jrViewerFXSkin.getEmailButton();
+    }
 }

@@ -1,7 +1,5 @@
 package win.zqxu.jrviewer;
 
-import java.util.ResourceBundle;
-
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -13,19 +11,7 @@ import javafx.geometry.VPos;
 import javafx.print.Printer;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBase;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Separator;
-import javafx.scene.control.SkinBase;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -34,6 +20,8 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.PrintPageFormat;
+
+import java.util.ResourceBundle;
 
 class JRViewerFXSkin extends SkinBase<JRViewerFX> {
   private static final ResourceBundle bundle = ResourceBundle.getBundle(
@@ -65,6 +53,7 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
   private ToggleButton actualButton = new ToggleButton();
   private ToggleButton fullButton = new ToggleButton();
   private ToggleButton widthButton = new ToggleButton();
+  private Button emailButton = new Button();
   private ScrollPane previewScroll = new ScrollPane();
   private FlowPane previewPane = new FlowPane();
   private ImageView previewImage = new ImageView();
@@ -123,6 +112,8 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
     buttonBox.getChildren().add(initButton(actualButton, "ZOOM_ACTUAL"));
     buttonBox.getChildren().add(initButton(fullButton, "ZOOM_FULL"));
     buttonBox.getChildren().add(initButton(widthButton, "ZOOM_WIDTH"));
+    buttonBox.getChildren().add(new Separator(Orientation.VERTICAL));
+    buttonBox.getChildren().add(initButton(emailButton, "EMAIL"));
   }
 
   private <T extends ButtonBase> T initButton(T button, String action) {
@@ -162,6 +153,8 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
       return "zoom_full.png";
     case "ZOOM_WIDTH":
       return "zoom_width.png";
+    case "EMAIL":
+            return "email.png";
     default:
       return null;
     }
@@ -455,4 +448,8 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
     double sh = statusBox.prefHeight(-1);
     return bh + ph + sh + 10 + topInset + bottomInset;
   }
+
+    public Button getEmailButton() {
+        return emailButton;
+    }
 }
