@@ -270,9 +270,7 @@ public class JRViewerFX extends Control {
     PageOrientation orient = PageOrientation.PORTRAIT;
     if (format.getOrientation() == OrientationEnum.LANDSCAPE)
       orient = PageOrientation.LANDSCAPE;
-    return printerJob.getPrinter().createPageLayout(paper, orient,
-        format.getLeftMargin(), format.getRightMargin(),
-        format.getTopMargin(), format.getBottomMargin());
+    return printerJob.getPrinter().createPageLayout(paper, orient, 0,0,0,0);
   }
 
   private Paper lookupPaper(PrinterJob printerJob, PrintPageFormat format) {
@@ -749,5 +747,9 @@ public class JRViewerFX extends Control {
 
     public Button getEmailButton() {
         return this.jrViewerFXSkin.getEmailButton();
+    }
+
+    public Button getPrintButton() {
+        return this.jrViewerFXSkin.getPrintButton();
     }
 }
