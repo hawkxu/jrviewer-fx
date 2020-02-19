@@ -420,7 +420,7 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
             printer = Printer.getDefaultPrinter();
         }
         System.out.println("DEFAULT PRINTER:" + printer);
-        String default_printer = "DEFAULT PRINTER";
+        String default_printer = "NENHUMA";
         printerLabel.setText(printer!=null? StringUtils.defaultIfBlank(printer.getName(), default_printer): default_printer);
     }
 
