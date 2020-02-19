@@ -18,6 +18,11 @@
       <version>3.17</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.7</version>
+    </dependency>
   </dependencies>
   <url>https://github.com/hawkxu/jrviewer-fx</url>
   <scm>

@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.PrintPageFormat;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ResourceBundle;
 
@@ -83,7 +84,7 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
                     previewPane.setPrefHeight(n.getHeight());
                     zoomToType(zoomType);
                 });
-        previewPane.setPadding(new Insets(15));
+        previewPane.setPadding(new Insets(5));
         previewPane.setAlignment(Pos.CENTER);
         previewImage.setPreserveRatio(true);
         statusBox.setSpacing(5);
@@ -415,9 +416,12 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
 
     private void updatePrinter() {
         Printer printer = getSkinnable().getPrinter();
-        if (printer == null)
+        if (printer == null){
             printer = Printer.getDefaultPrinter();
-        printerLabel.setText(printer.getName());
+        }
+        System.out.println("DEFAULT PRINTER:" + printer);
+        String default_printer = "DEFAULT PRINTER";
+        printerLabel.setText(printer!=null? StringUtils.defaultIfBlank(printer.getName(), default_printer): default_printer);
     }
 
     @Override
