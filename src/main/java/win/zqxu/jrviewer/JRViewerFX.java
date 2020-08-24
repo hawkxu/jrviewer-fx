@@ -101,7 +101,7 @@ public class JRViewerFX extends Control {
   }
 
   @Override
-  protected Skin<?> createDefaultSkin() {
+  protected JRViewerFXSkin createDefaultSkin() {
     this.jrViewerFXSkin =   new JRViewerFXSkin(this);
     return this.jrViewerFXSkin;
   }

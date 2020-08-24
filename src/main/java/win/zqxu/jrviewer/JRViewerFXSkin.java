@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ResourceBundle;
 
-class JRViewerFXSkin extends SkinBase<JRViewerFX> {
+public class JRViewerFXSkin extends SkinBase<JRViewerFX> {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(
             JRViewerFXSkin.class.getPackage().getName() + ".jrviewer-fx");
     private static final int PAGE_FIRST = 1;
@@ -33,7 +33,7 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
     private static final int PAGE_LAST = 4;
     private static final int ZOOM_FULL = 1;
     private static final int ZOOM_ACUTAL = 2;
-    private static final int ZOOM_WIDTH = 3;
+    public static final int ZOOM_WIDTH = 3;
     private static final int ZOOM_RATIO = 4;
     private static final int ZOOM_IN = 5;
     private static final int ZOOM_OUT = 6;
@@ -225,7 +225,7 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
         printerLabel.setGraphic(new ImageView(getImageURL("PRINT")));
     }
 
-    private void handleAction(ActionEvent event) {
+    public void handleAction(ActionEvent event) {
         Node source = (Node) event.getSource();
         switch (source.getId()) {
             case "SAVE":
@@ -323,7 +323,7 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
         lastButton.setDisable(page >= count);
     }
 
-    private void zoomToType(int zoomType) {
+    public void zoomToType(int zoomType) {
         int currentRatio = zoomRatio;
         this.zoomType = zoomType;
         zoomRatio = calcZoomRatio();
