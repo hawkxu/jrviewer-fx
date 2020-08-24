@@ -63,7 +63,7 @@ class JRViewerFXSkin extends SkinBase<JRViewerFX> {
     private Label pageLabel = new Label();
     private Label printerLabel = new Label();
     private int zoomType = ZOOM_RATIO;
-    private int zoomRatio = 100;
+    private int zoomRatio = 200;
 
     protected JRViewerFXSkin(JRViewerFX control) {
         super(control);

@@ -218,15 +218,19 @@ public class JRViewerFX extends Control {
   }
 
   private void applyPrintOptions(PrinterJob printerJob, JRPrintOptions options) {
-    int nCopies = options.getCopies();
-    printerJob.getJobSettings().setCopies(nCopies < 1 ? 1 : nCopies);
-    printerJob.getJobSettings().setPrintSides(options.getPrintSides());
-    PageRange[] pageRanges = options.getPageRanges();
-    if (pageRanges == null || pageRanges.length == 0) {
-      int pageCount = getReport().getPages().size();
-      pageRanges = new PageRange[]{new PageRange(1, pageCount)};
+    try {
+      int nCopies = options.getCopies();
+      printerJob.getJobSettings().setCopies(nCopies < 1 ? 1 : nCopies);
+      printerJob.getJobSettings().setPrintSides(options.getPrintSides());
+      PageRange[] pageRanges = options.getPageRanges();
+      if (pageRanges == null || pageRanges.length == 0) {
+        int pageCount = getReport().getPages().size();
+        pageRanges = new PageRange[]{new PageRange(1, pageCount)};
+      }
+      printerJob.getJobSettings().setPageRanges(pageRanges);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
-    printerJob.getJobSettings().setPageRanges(pageRanges);
   }
 
   private boolean print(PrinterJob printerJob, JasperPrint report) {
