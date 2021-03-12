@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,8 +20,10 @@ import com.sun.prism.j2d.J2DPrismGraphics;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ObservableSet;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.print.PageLayout;
 import javafx.print.PageOrientation;
 import javafx.print.PageRange;
@@ -30,14 +33,11 @@ import javafx.print.PrinterJob;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Control;
-import javafx.scene.control.Skin;
 import javafx.scene.image.Image;
-import javafx.stage.FileChooser;
+import javafx.stage.*;
 import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRPrintPage;
@@ -64,18 +64,18 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 
 /**
  * A Jasper report viewer written completely in JavaFx
- * 
+ *
  * <p>
  * Note: need access to <code>com.sun.javafx</code> and <code>com.sun.prism</code>
  * packages
  * </p>
- * 
+ *
  * @author zqxu
  */
 @SuppressWarnings("restriction")
 public class JRViewerFX extends Control {
   private static final ResourceBundle bundle = ResourceBundle.getBundle(
-      JRViewerFX.class.getPackage().getName() + ".jrviewer-fx");
+          JRViewerFX.class.getPackage().getName() + ".jrviewer-fx");
   private ObjectProperty<JasperPrint> report = new SimpleObjectProperty<>();
   private ObjectProperty<Printer> printer = new SimpleObjectProperty<>();
   private JasperReportsContext jasperReportsContext;
@@ -112,7 +112,7 @@ public class JRViewerFX extends Control {
 
   /**
    * get report to print
-   * 
+   *
    * @return the report to print
    */
   public final JasperPrint getReport() {
@@ -121,7 +121,7 @@ public class JRViewerFX extends Control {
 
   /**
    * set report to print
-   * 
+   *
    * @param report
    *          the report to print
    */
@@ -135,7 +135,7 @@ public class JRViewerFX extends Control {
 
   /**
    * get printer used to print, null always means default printer
-   * 
+   *
    * @return the printer used to print
    */
   public final Printer getPrinter() {
@@ -144,7 +144,7 @@ public class JRViewerFX extends Control {
 
   /**
    * set printer used to print, null always means default printer
-   * 
+   *
    * @param printer
    *          the printer used to print
    */
@@ -161,14 +161,14 @@ public class JRViewerFX extends Control {
 
   /**
    * print immediately with printing options, No-OP if current no report
-   * 
+   *
    * @param options
    *          printing options
    */
   public void print(JRPrintOptions options) {
     JasperPrint report = getReport();
     if (report == null) return;
-    PrinterJob printerJob = createPrinterJob();
+    PrinterJob printerJob = createPrinterJob(null);
     applyPrintOptions(printerJob, options);
     print(printerJob, report);
   }
@@ -189,7 +189,7 @@ public class JRViewerFX extends Control {
   /**
    * print with print dialog, printer change from print dialog with take effect to the
    * printer property, No-OP if current no report
-   * 
+   *
    * @param owner
    *          the owner window for the print dialog
    */
@@ -200,7 +200,7 @@ public class JRViewerFX extends Control {
   /**
    * print with print dialog, printer change from print dialog with take effect to the
    * printer property, No-OP if current no report
-   * 
+   *
    * @param owner
    *          the owner window for the print dialog
    * @param defaultOptions
@@ -209,7 +209,7 @@ public class JRViewerFX extends Control {
   public void printWithPrintDialog(Window owner, JRPrintOptions defaultOptions) {
     JasperPrint report = getReport();
     if (report == null) return;
-    PrinterJob printerJob = createPrinterJob();
+    PrinterJob printerJob = createPrinterJob(owner);
     applyPrintOptions(printerJob, defaultOptions);
     if (printerJob.showPrintDialog(owner)) {
       print(printerJob, report);
@@ -219,15 +219,17 @@ public class JRViewerFX extends Control {
 
   private void applyPrintOptions(PrinterJob printerJob, JRPrintOptions options) {
     try {
-      int nCopies = options.getCopies();
-      printerJob.getJobSettings().setCopies(nCopies < 1 ? 1 : nCopies);
-      printerJob.getJobSettings().setPrintSides(options.getPrintSides());
-      PageRange[] pageRanges = options.getPageRanges();
-      if (pageRanges == null || pageRanges.length == 0) {
-        int pageCount = getReport().getPages().size();
-        pageRanges = new PageRange[]{new PageRange(1, pageCount)};
+      if(getPrinter()!=null){
+        int nCopies = options.getCopies();
+        printerJob.getJobSettings().setCopies(nCopies < 1 ? 1 : nCopies);
+        printerJob.getJobSettings().setPrintSides(options.getPrintSides());
+        PageRange[] pageRanges = options.getPageRanges();
+        if (pageRanges == null || pageRanges.length == 0) {
+          int pageCount = getReport().getPages().size();
+          pageRanges = new PageRange[]{new PageRange(1, pageCount)};
+        }
+        printerJob.getJobSettings().setPageRanges(pageRanges);
       }
-      printerJob.getJobSettings().setPageRanges(pageRanges);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -244,7 +246,7 @@ public class JRViewerFX extends Control {
         if (!pageInRanges(page, pageRanges)) continue;
         PageLayout layout = getPageLayout(printerJob, report, page - 1);
         JRPrintable printable = new JRPrintable(
-            context, report, page - 1);
+                context, report, page - 1);
         succeed = printerJob.printPage(layout, printable);
         if (!succeed) return false;
       }
@@ -255,8 +257,26 @@ public class JRViewerFX extends Control {
     return succeed;
   }
 
-  private PrinterJob createPrinterJob() {
+  private PrinterJob createPrinterJob(Window owner) {
     Printer printer = getPrinter();
+    if(printer==null){
+      ObservableSet<Printer> allPrinters = Printer.getAllPrinters();
+      ChoiceDialog dialog = new ChoiceDialog(Printer.getDefaultPrinter(), allPrinters);
+      dialog.setHeaderText(bundle.getString("CHOOSE_PRINTER_HEADER"));
+      dialog.setContentText(bundle.getString("CHOOSE_PRINTER_TEXT"));
+      dialog.setTitle(bundle.getString("CHOOSE_PRINTER_TITLE"));
+      dialog.initModality(Modality.APPLICATION_MODAL);
+      centerStage((Stage) dialog.getDialogPane().getScene().getWindow(), dialog.getWidth(), dialog.getHeight());
+      if(owner!=null){
+        dialog.initOwner(owner);
+      }
+      Optional<Printer> opt = dialog.showAndWait();
+      if (opt.isPresent()) {
+        printer = opt.get();
+      }else{
+        printer = allPrinters.stream().findAny().orElse(Printer.getDefaultPrinter());
+      }
+    }
     return printer == null ? PrinterJob.createPrinterJob() : PrinterJob.createPrinterJob(printer);
   }
 
@@ -293,7 +313,7 @@ public class JRViewerFX extends Control {
 
   /**
    * print specified page to image
-   * 
+   *
    * @param pageIndex
    *          the page index
    * @param zoom
@@ -345,7 +365,7 @@ public class JRViewerFX extends Control {
 
   /**
    * show export dialog, No-OP if current no report
-   * 
+   *
    * @param owner
    *          the owner window for export dialog
    */
@@ -354,17 +374,17 @@ public class JRViewerFX extends Control {
     FileChooser chooser = new FileChooser();
     chooser.setInitialDirectory(new File("."));
     chooser.getExtensionFilters().addAll(
-        new ExtensionFilter(bundle.getString("FILTER_PDF"), "*.pdf"),
-        new ExtensionFilter(bundle.getString("FILTER_HTML"), "*.html"));
+            new ExtensionFilter(bundle.getString("FILTER_PDF"), "*.pdf"),
+            new ExtensionFilter(bundle.getString("FILTER_HTML"), "*.html"));
     try {
       Class.forName("org.apache.poi.POIDocument"); // check POI
       chooser.getExtensionFilters().addAll(
-          new ExtensionFilter(bundle.getString("FILTER_DOCX"), "*.docx"),
-          new ExtensionFilter(bundle.getString("FILTER_ODT"), "*.odt"),
-          new ExtensionFilter(bundle.getString("FILTER_XLS"), "*.xls"),
-          new ExtensionFilter(bundle.getString("FILTER_XLSX"), "*.xlsx"),
-          new ExtensionFilter(bundle.getString("FILTER_ODS"), "*.ods"),
-          new ExtensionFilter(bundle.getString("FILTER_PPTX"), "*.pptx"));
+              new ExtensionFilter(bundle.getString("FILTER_DOCX"), "*.docx"),
+              new ExtensionFilter(bundle.getString("FILTER_ODT"), "*.odt"),
+              new ExtensionFilter(bundle.getString("FILTER_XLS"), "*.xls"),
+              new ExtensionFilter(bundle.getString("FILTER_XLSX"), "*.xlsx"),
+              new ExtensionFilter(bundle.getString("FILTER_ODS"), "*.ods"),
+              new ExtensionFilter(bundle.getString("FILTER_PPTX"), "*.pptx"));
     } catch (Exception ex) {
       // safety ignore this exception
     }
@@ -379,7 +399,7 @@ public class JRViewerFX extends Control {
 
   /**
    * export report to file, No-OP if current no report
-   * 
+   *
    * @param fileName
    *          the target file name
    * @throws UnsupportedOperationException
@@ -391,32 +411,32 @@ public class JRViewerFX extends Control {
     JasperReportsContext context = getJasperReportsContext();
     try {
       switch (fileName.replaceAll(".*\\.", "").toLowerCase()) {
-      case "pdf":
-        JasperExportManager.exportReportToPdfFile(report, fileName);
-        break;
-      case "docx":
-        exportToStream(new JRDocxExporter(context), report, fileName);
-        break;
-      case "odt":
-        exportToStream(new JROdtExporter(context), report, fileName);
-        break;
-      case "xls":
-        exportToStream(new JRXlsExporter(context), report, fileName);
-        break;
-      case "xlsx":
-        exportToStream(new JRXlsxExporter(context), report, fileName);
-        break;
-      case "ods":
-        exportToStream(new JROdsExporter(context), report, fileName);
-        break;
-      case "pptx":
-        exportToStream(new JRPptxExporter(context), report, fileName);
-        break;
-      case "html":
-        JasperExportManager.exportReportToHtmlFile(report, fileName);
-        break;
-      default:
-        throw new UnsupportedOperationException("Unsupported file type: " + fileName);
+        case "pdf":
+          JasperExportManager.exportReportToPdfFile(report, fileName);
+          break;
+        case "docx":
+          exportToStream(new JRDocxExporter(context), report, fileName);
+          break;
+        case "odt":
+          exportToStream(new JROdtExporter(context), report, fileName);
+          break;
+        case "xls":
+          exportToStream(new JRXlsExporter(context), report, fileName);
+          break;
+        case "xlsx":
+          exportToStream(new JRXlsxExporter(context), report, fileName);
+          break;
+        case "ods":
+          exportToStream(new JROdsExporter(context), report, fileName);
+          break;
+        case "pptx":
+          exportToStream(new JRPptxExporter(context), report, fileName);
+          break;
+        case "html":
+          JasperExportManager.exportReportToHtmlFile(report, fileName);
+          break;
+        default:
+          throw new UnsupportedOperationException("Unsupported file type: " + fileName);
       }
     } catch (JRException ex) {
       throw new RuntimeException("Export report failed", ex);
@@ -424,7 +444,7 @@ public class JRViewerFX extends Control {
   }
 
   private void exportToStream(Exporter<ExporterInput, ?, ?, OutputStreamExporterOutput> exporter,
-      JasperPrint report, String fileName) throws JRException {
+                              JasperPrint report, String fileName) throws JRException {
     exporter.setExporterInput(new SimpleExporterInput(report));
     exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(fileName));
     exporter.exportReport();
@@ -433,7 +453,7 @@ public class JRViewerFX extends Control {
   /**
    * merge multiple reports to one report, the result report name contains first two (max)
    * report names
-   * 
+   *
    * @param reports
    *          multiple reports
    * @return result report or null if reports is an empty array
@@ -459,7 +479,7 @@ public class JRViewerFX extends Control {
 
   /**
    * merge multiple reports to one report
-   * 
+   *
    * @param name
    *          the result report name
    * @param reports
@@ -485,7 +505,7 @@ public class JRViewerFX extends Control {
   /**
    * show preview for the report, modality WINDOW_MODAL used for non-null owner, otherwise
    * APPLICATION_MODAL used
-   * 
+   *
    * @param owner
    *          the owner window for preview
    * @param report
@@ -500,7 +520,7 @@ public class JRViewerFX extends Control {
 
   /**
    * show preview for the report with specified modality type
-   * 
+   *
    * @param owner
    *          the owner window for preview dialog
    * @param modality
@@ -521,7 +541,7 @@ public class JRViewerFX extends Control {
 
   /**
    * print the report immediately to default printer
-   * 
+   *
    * @param report
    *          the report to print
    */
@@ -531,7 +551,7 @@ public class JRViewerFX extends Control {
 
   /**
    * print the report immediately to default printer with printing options
-   * 
+   *
    * @param report
    *          the report to print
    * @param options
@@ -543,7 +563,7 @@ public class JRViewerFX extends Control {
 
   /**
    * print the report immediately to specified printer
-   * 
+   *
    * @param report
    *          the report to print
    * @param printer
@@ -555,7 +575,7 @@ public class JRViewerFX extends Control {
 
   /**
    * print the report immediately to specified printer with printing options
-   * 
+   *
    * @param report
    *          the report to print
    * @param printer
@@ -569,7 +589,7 @@ public class JRViewerFX extends Control {
 
   /**
    * print the report with print dialog
-   * 
+   *
    * @param owner
    *          the owner window for print dialog
    * @param report
@@ -581,7 +601,7 @@ public class JRViewerFX extends Control {
 
   /**
    * print the report with print dialog and default printing options
-   * 
+   *
    * @param owner
    *          the owner window for print dialog
    * @param report
@@ -590,13 +610,13 @@ public class JRViewerFX extends Control {
    *          the default printing options
    */
   public static void printWithPrintDialog(Window owner, JasperPrint report,
-      JRPrintOptions defaultOptions) {
+                                          JRPrintOptions defaultOptions) {
     new JRViewerFX(report).printWithPrintDialog(owner, defaultOptions);
   }
 
   /**
    * print the report with print dialog and default printer
-   * 
+   *
    * @param owner
    *          the owner window for print dialog
    * @param report
@@ -605,13 +625,13 @@ public class JRViewerFX extends Control {
    *          the default printer
    */
   public static void printWithPrintDialog(Window owner, JasperPrint report,
-      Printer defaultPrinter) {
+                                          Printer defaultPrinter) {
     new JRViewerFX(report, defaultPrinter).printWithPrintDialog(owner);
   }
 
   /**
    * print the report with print dialog and default printer and default printing options
-   * 
+   *
    * @param owner
    *          the owner window for the print dialog
    * @param report
@@ -622,13 +642,13 @@ public class JRViewerFX extends Control {
    *          the default printing options
    */
   public static void printWithPrintDialog(Window owner, JasperPrint report,
-      Printer defaultPrinter, JRPrintOptions defaultOptions) {
+                                          Printer defaultPrinter, JRPrintOptions defaultOptions) {
     new JRViewerFX(report, defaultPrinter).printWithPrintDialog(owner, defaultOptions);
   }
 
   /**
    * show export dialog for the report
-   * 
+   *
    * @param owner
    *          the owner window for export dialog
    * @param report
@@ -640,7 +660,7 @@ public class JRViewerFX extends Control {
 
   /**
    * export the report to file
-   * 
+   *
    * @param report
    *          the report to export
    * @param fileName
@@ -674,7 +694,7 @@ public class JRViewerFX extends Control {
     private JRPrintNode peer;
 
     public JRPrintable(JasperReportsContext jasperReportsContext,
-        JasperPrint report, int pageIndex) {
+                       JasperPrint report, int pageIndex) {
       peer = new JRPrintNode(jasperReportsContext, report, pageIndex);
     }
 
@@ -705,7 +725,7 @@ public class JRViewerFX extends Control {
     private int pageIndex;
 
     public JRPrintNode(JasperReportsContext jasperReportsContext,
-        JasperPrint report, int pageIndex) {
+                       JasperPrint report, int pageIndex) {
       this.jasperReportsContext = jasperReportsContext;
       this.report = report;
       this.pageIndex = pageIndex;
@@ -749,11 +769,18 @@ public class JRViewerFX extends Control {
     }
   }
 
-    public Button getEmailButton() {
-        return this.jrViewerFXSkin.getEmailButton();
-    }
+  public Button getEmailButton() {
+    return this.jrViewerFXSkin.getEmailButton();
+  }
 
-    public Button getPrintButton() {
-        return this.jrViewerFXSkin.getPrintButton();
-    }
+  public Button getPrintButton() {
+    return this.jrViewerFXSkin.getPrintButton();
+  }
+
+  private void centerStage(Stage stage, double width, double height) {
+    Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+    stage.setX((screenBounds.getWidth() - width) / 2);
+    stage.setY((screenBounds.getHeight() - height) / 2);
+  }
+
 }
