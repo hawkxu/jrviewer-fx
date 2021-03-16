@@ -281,6 +281,7 @@ public class JRViewerFX extends Control {
   }
 
   private boolean pageInRanges(int page, PageRange[] pageRanges) {
+    if(pageRanges==null)return false;
     for (PageRange range : pageRanges) {
       if (page >= range.getStartPage() && page <= range.getEndPage())
         return true;
