@@ -263,21 +263,21 @@ public class JRViewerFX extends Control {
     Printer printer = getPrinter();
     if(printer==null){
       ObservableSet<Printer> allPrinters = Printer.getAllPrinters();
-      ChoiceDialog dialog = new ChoiceDialog(Printer.getDefaultPrinter(), allPrinters);
-      dialog.setHeaderText(bundle.getString("CHOOSE_PRINTER_HEADER"));
-      dialog.setContentText(bundle.getString("CHOOSE_PRINTER_TEXT"));
-      dialog.setTitle(bundle.getString("CHOOSE_PRINTER_TITLE"));
-      dialog.initModality(Modality.APPLICATION_MODAL);
-      centerStage((Stage) dialog.getDialogPane().getScene().getWindow(), dialog.getWidth(), dialog.getHeight());
-      if(owner!=null){
-        dialog.initOwner(owner);
-      }
-      Optional<Printer> opt = dialog.showAndWait();
-      if (opt.isPresent()) {
-        printer = opt.get();
-      }else{
+//      ChoiceDialog dialog = new ChoiceDialog(Printer.getDefaultPrinter(), allPrinters);
+//      dialog.setHeaderText(bundle.getString("CHOOSE_PRINTER_HEADER"));
+//      dialog.setContentText(bundle.getString("CHOOSE_PRINTER_TEXT"));
+//      dialog.setTitle(bundle.getString("CHOOSE_PRINTER_TITLE"));
+//      dialog.initModality(Modality.APPLICATION_MODAL);
+//      centerStage((Stage) dialog.getDialogPane().getScene().getWindow(), dialog.getWidth(), dialog.getHeight());
+//      if(owner!=null){
+//        dialog.initOwner(owner);
+//      }
+//      Optional<Printer> opt = dialog.showAndWait();
+//      if (opt.isPresent()) {
+//        printer = opt.get();
+//      }else{
         printer = allPrinters.stream().findAny().orElse(Printer.getDefaultPrinter());
-      }
+//      }
     }
     return printer == null ? PrinterJob.createPrinterJob() : PrinterJob.createPrinterJob(printer);
   }
