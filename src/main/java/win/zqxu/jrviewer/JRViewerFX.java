@@ -140,7 +140,8 @@ public class JRViewerFX extends Control {
    * @return the printer used to print
    */
   public final Printer getPrinter() {
-    return ObjectUtils.defaultIfNull(printerProperty().get(), Printer.getDefaultPrinter());
+    return ObjectUtils.defaultIfNull(ObjectUtils.defaultIfNull(printerProperty().get(), Printer.getDefaultPrinter()),
+            Printer.getAllPrinters().stream().findFirst().orElse(Printer.getDefaultPrinter()));
   }
 
   /**
