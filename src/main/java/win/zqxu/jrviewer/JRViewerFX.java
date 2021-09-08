@@ -61,6 +61,7 @@ import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleGraphics2DExporterOutput;
 import net.sf.jasperreports.export.SimpleGraphics2DReportConfiguration;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import org.apache.commons.lang3.ObjectUtils;
 
 /**
  * A Jasper report viewer written completely in JavaFx
@@ -139,7 +140,7 @@ public class JRViewerFX extends Control {
    * @return the printer used to print
    */
   public final Printer getPrinter() {
-    return printerProperty().get();
+    return ObjectUtils.defaultIfNull(printerProperty().get(), Printer.getDefaultPrinter());
   }
 
   /**
